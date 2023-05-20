@@ -46,11 +46,19 @@ public class MessageService
         await _hubConnection.StartAsync();
         await SendUsernameToHubAsync();
     }
+    internal async Task<IEnumerable<string>> GetOnlineUsers()
+    {
+
+        using var client = new HttpClient();
+        var requestUriString = $"https://localhost:7240/api/Username/GetUsernames";
+        var response= await client.GetAsync(requestUriString);
+        return JsonSerializer.Deserialize<IEnumerable<string>>(await response.Content.ReadAsStringAsync());
+    }
 
     private async Task SendUsernameToHubAsync()
     {
         using var client = new HttpClient();
-        var requestUriString = $"https://localhost:7240/api/AddUsername";
+        var requestUriString = $"https://localhost:7240/api/Username/AddUsername";
         await client.PostAsync(requestUriString, new StringContent(JsonSerializer.Serialize(new UsernameToConnectionId()
         {
             ConnectionId=ConnectionId, Username=Username
