@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.32804.182
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger.Server", "Messenger.Server\Messenger.Server.csproj", "{7D202108-4722-4BD2-B0B0-338B1791FC6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messanger.Client", "Messanger.Client\Messanger.Client.csproj", "{33D2A5AC-81CF-4664-BBAC-F4C1F55F1A73}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messenger.Core", "Messenger.Core\Messenger.Core.csproj", "{3DBA5890-C434-438A-9C40-438045199EF8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Messenger.Server", "Messenger.Server\Messenger.Server.csproj", "{7E2158C7-DC55-4FA2-BE48-9CB8EF3BA2D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7D202108-4722-4BD2-B0B0-338B1791FC6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D202108-4722-4BD2-B0B0-338B1791FC6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D202108-4722-4BD2-B0B0-338B1791FC6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D202108-4722-4BD2-B0B0-338B1791FC6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33D2A5AC-81CF-4664-BBAC-F4C1F55F1A73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33D2A5AC-81CF-4664-BBAC-F4C1F55F1A73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33D2A5AC-81CF-4664-BBAC-F4C1F55F1A73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33D2A5AC-81CF-4664-BBAC-F4C1F55F1A73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DBA5890-C434-438A-9C40-438045199EF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DBA5890-C434-438A-9C40-438045199EF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DBA5890-C434-438A-9C40-438045199EF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DBA5890-C434-438A-9C40-438045199EF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E2158C7-DC55-4FA2-BE48-9CB8EF3BA2D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E2158C7-DC55-4FA2-BE48-9CB8EF3BA2D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E2158C7-DC55-4FA2-BE48-9CB8EF3BA2D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E2158C7-DC55-4FA2-BE48-9CB8EF3BA2D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
