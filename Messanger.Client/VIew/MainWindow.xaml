@@ -30,7 +30,7 @@
                 </ListView.ItemTemplate>
             </ListView>
         </Border>
-        <Grid  Grid.Column="1">
+        <Grid  Grid.Column="1" Visibility="{Binding ChatWindowVisibility, UpdateSourceTrigger=PropertyChanged}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="6*" />
                 <RowDefinition Height="1*" />

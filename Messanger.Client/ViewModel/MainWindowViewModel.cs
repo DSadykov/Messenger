@@ -14,10 +14,11 @@ using System.Windows.Controls;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using System.ComponentModel;
 
 namespace Messanger.Client.ViewModel
 {
-    public class MainWindowViewModel
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
         public string Username { get; private set; }
         private Dispatcher _dispatcher;
@@ -31,6 +32,8 @@ namespace Messanger.Client.ViewModel
             viewModel.LoadChats(username);
             return viewModel;
         }
+
+        public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
         public async Task BuildMessageServiceAsync(string username)
         {
             _messageService = new MessageService(username);
@@ -61,17 +64,38 @@ namespace Messanger.Client.ViewModel
                     Background = y.Username == username ? Brushes.Green : Brushes.Yellow,
                 }))
             });
-            _dispatcher=Dispatcher.CurrentDispatcher;
+            _dispatcher = Dispatcher.CurrentDispatcher;
             ChatsList = new(chats);
         }
 
 
 
         public ObservableCollection<ChatModel> ChatsList { get; set; }
-        public ChatModel SelectedChat { get; set; }
+        public ChatModel SelectedChat
+        {
+            get => _selectedChat;
+            set
+            {
+                _selectedChat = value;
+
+                NotifyPropertyChanged(nameof(SelectedChat));
+                NotifyPropertyChanged(nameof(ChatWindowVisibility));
+            }
+        }
 
         private RelayCommand _sendMessage;
         private MessageService _messageService;
+        private ChatModel _selectedChat;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void NotifyPropertyChanged(string info)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(info));
+            }
+        }
 
         public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
 
