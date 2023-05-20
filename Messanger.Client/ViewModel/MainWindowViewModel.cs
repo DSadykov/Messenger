@@ -12,25 +12,33 @@ using Messenger.Core.Models;
 using System.Windows.Media;
 using System.Windows.Controls;
 using System.Net.Http.Headers;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Messanger.Client.ViewModel
 {
     public class MainWindowViewModel
     {
         public string Username { get; private set; }
-        public MainWindowViewModel(string username)
+        private Dispatcher _dispatcher;
+        public static async Task<MainWindowViewModel> BuildViewModelAsync(string username)
         {
-            Username = username;
-            _messageService = new MessageService(username);
-            LoadChats(username);
-            _messageService.BeginListening();
-            _messageService.MessageRecieved += RecieveMessage;
+            var viewModel = new MainWindowViewModel
+            {
+                Username = username
+            };
+            await viewModel.BuildMessageServiceAsync(username);
+            viewModel.LoadChats(username);
+            return viewModel;
         }
-
+        public async Task BuildMessageServiceAsync(string username)
+        {
+            _messageService = new MessageService(username);
+            await _messageService.BeginListeningAsync();
+            _messageService.MessageRecieved += RecieveMessageAsync;
+        }
         public MainWindowViewModel()
         {
-            _messageService = new MessageService("Me");
-            LoadChats("Me");
         }
 
         private void LoadChats(string username)
@@ -53,6 +61,7 @@ namespace Messanger.Client.ViewModel
                     Background = y.Username == username ? Brushes.Green : Brushes.Yellow,
                 }))
             });
+            _dispatcher=Dispatcher.CurrentDispatcher;
             ChatsList = new(chats);
         }
 
@@ -62,23 +71,26 @@ namespace Messanger.Client.ViewModel
         public ChatModel SelectedChat { get; set; }
 
         private RelayCommand _sendMessage;
-        private readonly MessageService _messageService;
+        private MessageService _messageService;
 
         public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
 
-        private void RecieveMessage(MessageModel message)
+        private void RecieveMessageAsync(MessageModel message)
         {
             var chat = ChatsList.FirstOrDefault(x => x.ChatName == message.Username);
-            if(chat is null)
+            if (chat is null)
             {
                 return;
             }
-            chat.Messages.Add(new MessageViewModel()
+            _dispatcher.Invoke(new Action(() =>
             {
-                Message = message,
-                HorizontalAlignment = message.Username == Username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
-                Background = message.Username == Username ? Brushes.Green : Brushes.Yellow,
-            });
+                chat.Messages.Add(new MessageViewModel()
+                {
+                    Message = message,
+                    HorizontalAlignment = message.Username == Username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
+                    Background = message.Username == Username ? Brushes.Green : Brushes.Yellow,
+                });
+            }));
         }
 
         private void PerformSendMessage(object commandParameter)

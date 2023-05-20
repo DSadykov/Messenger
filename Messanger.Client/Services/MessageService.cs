@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Policy;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+
+using Accessibility;
 
 using Messanger.Client.ViewModel;
 
 using Messenger.Core.Models;
+using Messenger.Server.Controllers;
 
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -14,23 +23,38 @@ namespace Messanger.Client.Services;
 
 public class MessageService
 {
-    private HubConnection _hubConnection;
-
+    public HubConnection _hubConnection;
+    public string ConnectionId => _hubConnection.ConnectionId;
     public MessageService(string username)
     {
         Username = username;
     }
 
-    public Action<MessageModel> MessageRecieved { get; internal set; }
+    public Action<MessageModel> MessageRecieved { get; set; }
     public string Username { get; }
 
-    internal void BeginListening()
+    internal async Task BeginListeningAsync()
     {
         _hubConnection = new HubConnectionBuilder()
-                .WithUrl("http://localhost:53353/ChatHub")
-                .Build();
-        _hubConnection.StartAsync();
-        _hubConnection.On($"MessageTo{Username}", MessageRecieved);
+                        .WithUrl("https://localhost:7240/chatHub")
+                        .Build();
+                
+        _hubConnection.On("SendMessage", (MessageModel x) =>
+        {
+            MessageRecieved(x);
+        });
+        await _hubConnection.StartAsync();
+        await SendUsernameToHubAsync();
+    }
+
+    private async Task SendUsernameToHubAsync()
+    {
+        using var client = new HttpClient();
+        var requestUriString = $"https://localhost:7240/api/AddUsername";
+        await client.PostAsync(requestUriString, new StringContent(JsonSerializer.Serialize(new UsernameToConnectionId()
+        {
+            ConnectionId=ConnectionId, Username=Username
+        }), Encoding.UTF8, "application/json"));
     }
 
     internal IEnumerable<MessageModel> RecieveMessages()
@@ -88,6 +112,13 @@ public class MessageService
 
     internal void SendMessage(string message, string messageTo)
     {
-        _hubConnection.SendAsync($"MessageTo{messageTo}",message);
+        _hubConnection.InvokeAsync($"SendMessage", messageTo, new MessageModel()
+        {
+            DateSent = DateTime.Now,
+            Username = Username,
+            ReceiverUsername = messageTo,
+            Message = message,
+            Id = Guid.NewGuid()
+        });
     }
 }
