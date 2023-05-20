@@ -7,13 +7,4 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Model\" />
-    <Folder Include="ViewModel\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Include="App.xaml" />
-  </ItemGroup>
-
 </Project>

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Messanger.Client.VIew"
         xmlns:viewModels="clr-namespace:Messanger.Client.ViewModel"
         mc:Ignorable="d"
-        Title="LoginView" Height="350" Width="600">
+        Title="LoginView" Height="350" Width="600" x:Name="ThisWindow">
     <Window.DataContext>
         <viewModels:LoginViewModel/>
     </Window.DataContext>
@@ -16,7 +16,8 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Label Content="Введите ваш никнейм" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-        <TextBlock Text="{Binding Username}" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1"/>
+        <Label Content="Введите ваш никнейм" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+        <TextBox Text="{Binding Path=Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" TextAlignment="Center" FontSize="15" Grid.Row="1" Margin="60,0,60,0"  Height="40"/>
+        <Button Grid.Row="2" Margin="80,40,80,40" Content="Войти" Command="{Binding Path=LoginCommand}" CommandParameter="{Binding ElementName=ThisWindow}" />
     </Grid>
 </Window>

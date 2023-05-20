@@ -8,5 +8,11 @@ namespace Messanger.Client.ViewModel
 {
     class MainWindowViewModel
     {
+        public MainWindowViewModel(string username)
+        {
+            Username = username;
+        }
+
+        public string Username { get; }
     }
 }
