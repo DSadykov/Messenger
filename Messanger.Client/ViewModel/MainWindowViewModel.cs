@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Messanger.Client.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,6 +16,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.ComponentModel;
+using Messanger.Client.VIew;
 
 namespace Messanger.Client.ViewModel
 {
@@ -126,6 +128,20 @@ namespace Messanger.Client.ViewModel
             }
             _messageService.SendMessage(message, SelectedChat.ChatName);
             (commandParameter as TextBox).Text = "";
+        }
+
+        private RelayCommand _addNewChatCommand;
+        public ICommand AddNewChatCommand => _addNewChatCommand ??= new RelayCommand(AddNewChat);
+
+        private async void AddNewChat(object commandParameter)
+        {
+            var onlineUsers = await _messageService.GetOnlineUsers();
+            new AddNewChatView() { DataContext=new AddNewChatViewModel(this, onlineUsers) }.Show();
+        }
+
+        internal void AddNewChat(string v)
+        {
+            throw new NotImplementedException();
         }
     }
 }
