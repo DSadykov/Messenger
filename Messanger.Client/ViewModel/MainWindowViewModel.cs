@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using System.ComponentModel;
 using Messanger.Client.VIew;
+using System.Data;
 
 namespace Messanger.Client.ViewModel
 {
@@ -106,6 +107,22 @@ namespace Messanger.Client.ViewModel
             var chat = ChatsList.FirstOrDefault(x => x.ChatName == message.Username);
             if (chat is null)
             {
+                _dispatcher.Invoke(new Action(() =>
+                {
+                    ChatsList.Add(new ChatModel()
+                    {
+                        ChatName = message.Username,
+                        Messages = new()
+                        {
+                            new MessageViewModel()
+                            {
+                                Message = message,
+                    HorizontalAlignment = message.Username == Username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
+                    Background = message.Username == Username ? Brushes.Green : Brushes.Yellow,
+                            }
+                        }
+                    });
+                }));
                 return;
             }
             _dispatcher.Invoke(new Action(() =>
@@ -119,14 +136,28 @@ namespace Messanger.Client.ViewModel
             }));
         }
 
-        private void PerformSendMessage(object commandParameter)
+        private async void PerformSendMessage(object commandParameter)
         {
             var message = (commandParameter as TextBox)?.Text;
             if (string.IsNullOrEmpty(message))
             {
                 return;
             }
-            _messageService.SendMessage(message, SelectedChat.ChatName);
+            var messageModel = new MessageModel()
+            {
+                DateSent = DateTime.Now,
+                Username = Username,
+                ReceiverUsername = SelectedChat.ChatName,
+                Message = message,
+                Id = Guid.NewGuid()
+            };
+            await _messageService.SendMessage(messageModel);
+            SelectedChat.Messages.Add(new MessageViewModel()
+            {
+                Message = messageModel,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Background = Brushes.Green,
+            });
             (commandParameter as TextBox).Text = "";
         }
 
@@ -135,13 +166,21 @@ namespace Messanger.Client.ViewModel
 
         private async void AddNewChat(object commandParameter)
         {
-            var onlineUsers = await _messageService.GetOnlineUsers();
-            new AddNewChatView() { DataContext=new AddNewChatViewModel(this, onlineUsers) }.Show();
+            var onlineUsers = (await _messageService.GetOnlineUsers()).Except(new List<string>() { Username });
+
+            new AddNewChatView() { DataContext = new AddNewChatViewModel(this, onlineUsers) }.Show();
         }
 
         internal void AddNewChat(string v)
         {
-            throw new NotImplementedException();
+            _dispatcher.Invoke(new Action(() =>
+            {
+                ChatsList.Add(new ChatModel()
+                {
+                    ChatName = v,
+                    Messages = new()
+                });
+            }));
         }
     }
 }

@@ -67,66 +67,11 @@ public class MessageService
 
     internal IEnumerable<MessageModel> RecieveMessages()
     {
-        return new List<MessageModel>
-        {
-            new()
-            {
-
-                    Message="Pepega2",
-                    DateSent=DateTime.Now,
-                    Username="Me",
-                    ReceiverUsername="You"
-
-            },
-            new()
-            {
-
-                    Message="Pepega3",
-                    DateSent=DateTime.Now.AddMinutes(5),
-                    Username="Me",
-
-                    ReceiverUsername="You"
-
-            },new()
-            {
-
-                    Message="Pepega4",
-                    DateSent=DateTime.Now.AddMinutes(-2),
-                    Username="Me",
-                    ReceiverUsername="You"
-
-            }
-            ,new()
-            {
-
-                    Message="Pepega1",
-                    DateSent=DateTime.Now.AddMinutes(1),
-                    Username="You",
-                    ReceiverUsername="Me"
-
-            },new()
-            {
-
-                    Message="Pepega2",
-                    DateSent=DateTime.Now.AddMinutes(-1),
-                    Username="You",
-                    ReceiverUsername="Me"
-
-            },
-        };
-
-
+        return new List<MessageModel>();
     }
 
-    internal void SendMessage(string message, string messageTo)
+    internal async Task SendMessage(MessageModel message)
     {
-        _hubConnection.InvokeAsync($"SendMessage", messageTo, new MessageModel()
-        {
-            DateSent = DateTime.Now,
-            Username = Username,
-            ReceiverUsername = messageTo,
-            Message = message,
-            Id = Guid.NewGuid()
-        });
+        await _hubConnection.InvokeAsync($"SendMessage", message.ReceiverUsername, message);
     }
 }
