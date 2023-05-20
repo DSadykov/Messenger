@@ -1,0 +1,4 @@
+﻿[*.cs]
+
+# IDE0161: Convert to file-scoped namespace
+dotnet_diagnostic.IDE0161.severity = silent
