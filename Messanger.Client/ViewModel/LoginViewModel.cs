@@ -18,13 +18,13 @@ namespace Messanger.Client.ViewModel
         {
             get
             {
-                return _loginCommand ??= new RelayCommand(Login, x=>!string.IsNullOrWhiteSpace(Username));
+                return _loginCommand ??= new RelayCommand(LoginAsync, x=>!string.IsNullOrWhiteSpace(Username));
             }
         }
 
-        private void Login(object obj)
+        private async void LoginAsync(object obj)
         {
-            var mainWindow = new MainWindow() { DataContext = new MainWindowViewModel(Username), Title=Username };
+            var mainWindow = new MainWindow() { DataContext = await MainWindowViewModel.BuildViewModelAsync(Username), Title=Username };
             (obj as Window).Close();
             mainWindow.Show();
         }
