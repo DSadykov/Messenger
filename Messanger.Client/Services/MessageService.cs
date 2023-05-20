@@ -4,16 +4,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Messanger.Client.ViewModel;
+
 using Messenger.Core.Models;
+
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Messanger.Client.Services;
 
 public class MessageService
 {
-    public required string Username { get; set; }
+    private HubConnection _hubConnection;
+
+    public MessageService(string username)
+    {
+        Username = username;
+    }
+
+    public Action<MessageModel> MessageRecieved { get; internal set; }
+    public string Username { get; }
 
     internal void BeginListening()
     {
+        _hubConnection = new HubConnectionBuilder()
+                .WithUrl("http://localhost:53353/ChatHub")
+                .Build();
+        _hubConnection.StartAsync();
+        _hubConnection.On($"MessageTo{Username}", MessageRecieved);
     }
 
     internal IEnumerable<MessageModel> RecieveMessages()
@@ -69,7 +86,8 @@ public class MessageService
 
     }
 
-    internal void SendMessage(string message)
+    internal void SendMessage(string message, string messageTo)
     {
+        _hubConnection.SendAsync($"MessageTo{messageTo}",message);
     }
 }

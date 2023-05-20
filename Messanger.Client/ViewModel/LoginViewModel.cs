@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
+using Messanger.Client.VIew;
+
 namespace Messanger.Client.ViewModel
 {
     public class LoginViewModel
