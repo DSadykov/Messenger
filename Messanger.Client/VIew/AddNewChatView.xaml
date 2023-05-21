@@ -1,0 +1,23 @@
+﻿<Window x:Class="Messanger.Client.VIew.AddNewChatView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Messanger.Client.VIew" xmlns:viewmodel="clr-namespace:Messanger.Client.ViewModel" d:DataContext="{d:DesignInstance Type=viewmodel:AddNewChatViewModel}"
+        mc:Ignorable="d"
+        Title="Добавить чат" Height="250" Width="400" x:Name="ThisWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
+        <ListView ItemsSource="{Binding OnlineUsers}" x:Name="OnlineUsers" SelectedItem="{Binding SelectedUser}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding}" VerticalAlignment="Center" TextAlignment="Center"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Button Grid.Row="1" Content="Добавить" Command="{Binding AddNewChat}" CommandParameter="{Binding ElementName=ThisWindow}"/>
+    </Grid>
+</Window>

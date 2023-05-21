@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Messanger.Client.ViewModel;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -14,10 +15,13 @@ using System.Windows.Controls;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using System.ComponentModel;
+using Messanger.Client.VIew;
+using System.Data;
 
 namespace Messanger.Client.ViewModel
 {
-    public class MainWindowViewModel
+    public class MainWindowViewModel : INotifyPropertyChanged
     {
         public string Username { get; private set; }
         private Dispatcher _dispatcher;
@@ -31,6 +35,8 @@ namespace Messanger.Client.ViewModel
             viewModel.LoadChats(username);
             return viewModel;
         }
+
+        public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
         public async Task BuildMessageServiceAsync(string username)
         {
             _messageService = new MessageService(username);
@@ -61,17 +67,38 @@ namespace Messanger.Client.ViewModel
                     Background = y.Username == username ? Brushes.Green : Brushes.Yellow,
                 }))
             });
-            _dispatcher=Dispatcher.CurrentDispatcher;
+            _dispatcher = Dispatcher.CurrentDispatcher;
             ChatsList = new(chats);
         }
 
 
 
         public ObservableCollection<ChatModel> ChatsList { get; set; }
-        public ChatModel SelectedChat { get; set; }
+        public ChatModel SelectedChat
+        {
+            get => _selectedChat;
+            set
+            {
+                _selectedChat = value;
+
+                NotifyPropertyChanged(nameof(SelectedChat));
+                NotifyPropertyChanged(nameof(ChatWindowVisibility));
+            }
+        }
 
         private RelayCommand _sendMessage;
         private MessageService _messageService;
+        private ChatModel _selectedChat;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void NotifyPropertyChanged(string info)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(info));
+            }
+        }
 
         public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
 
@@ -80,6 +107,22 @@ namespace Messanger.Client.ViewModel
             var chat = ChatsList.FirstOrDefault(x => x.ChatName == message.Username);
             if (chat is null)
             {
+                _dispatcher.Invoke(new Action(() =>
+                {
+                    ChatsList.Add(new ChatModel()
+                    {
+                        ChatName = message.Username,
+                        Messages = new()
+                        {
+                            new MessageViewModel()
+                            {
+                                Message = message,
+                    HorizontalAlignment = message.Username == Username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
+                    Background = message.Username == Username ? Brushes.Green : Brushes.Yellow,
+                            }
+                        }
+                    });
+                }));
                 return;
             }
             _dispatcher.Invoke(new Action(() =>
@@ -93,15 +136,51 @@ namespace Messanger.Client.ViewModel
             }));
         }
 
-        private void PerformSendMessage(object commandParameter)
+        private async void PerformSendMessage(object commandParameter)
         {
             var message = (commandParameter as TextBox)?.Text;
             if (string.IsNullOrEmpty(message))
             {
                 return;
             }
-            _messageService.SendMessage(message, SelectedChat.ChatName);
+            var messageModel = new MessageModel()
+            {
+                DateSent = DateTime.Now,
+                Username = Username,
+                ReceiverUsername = SelectedChat.ChatName,
+                Message = message,
+                Id = Guid.NewGuid()
+            };
+            await _messageService.SendMessage(messageModel);
+            SelectedChat.Messages.Add(new MessageViewModel()
+            {
+                Message = messageModel,
+                HorizontalAlignment = HorizontalAlignment.Left,
+                Background = Brushes.Green,
+            });
             (commandParameter as TextBox).Text = "";
+        }
+
+        private RelayCommand _addNewChatCommand;
+        public ICommand AddNewChatCommand => _addNewChatCommand ??= new RelayCommand(AddNewChat);
+
+        private async void AddNewChat(object commandParameter)
+        {
+            var onlineUsers = (await _messageService.GetOnlineUsers()).Except(new List<string>() { Username });
+
+            new AddNewChatView() { DataContext = new AddNewChatViewModel(this, onlineUsers) }.Show();
+        }
+
+        internal void AddNewChat(string v)
+        {
+            _dispatcher.Invoke(new Action(() =>
+            {
+                ChatsList.Add(new ChatModel()
+                {
+                    ChatName = v,
+                    Messages = new()
+                });
+            }));
         }
     }
 }

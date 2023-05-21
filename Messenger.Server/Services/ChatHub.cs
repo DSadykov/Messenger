@@ -1,4 +1,6 @@
-﻿using Messenger.Core.Models;
+﻿using System.Collections.Generic;
+
+using Messenger.Core.Models;
 
 using Microsoft.AspNetCore.SignalR;
 
@@ -16,13 +18,17 @@ public class ChatHub : Hub
         }
         _usernameToConnectionId.Add(username, chatId);
     }
+    public IEnumerable<string> GetUsernameList()
+    {
+        return _usernameToConnectionId.Keys;
+    }
     public async Task SendMessage(string userName, MessageModel message)
     {
         await Clients.Client(_usernameToConnectionId[userName]).SendAsync("SendMessage", message);
     }
-    public override Task OnConnectedAsync()
+    public override Task OnDisconnectedAsync(Exception? exception)
     {
-        var ct = Context;
-        return base.OnConnectedAsync();
+        _usernameToConnectionId.Remove(_usernameToConnectionId.FirstOrDefault(x => x.Value == Context.ConnectionId).Key);
+        return base.OnDisconnectedAsync(exception);
     }
 }
