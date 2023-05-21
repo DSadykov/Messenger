@@ -32,7 +32,7 @@ namespace Messanger.Client.ViewModel
                 Username = username
             };
             await viewModel.BuildMessageServiceAsync(username);
-            viewModel.LoadChats(username);
+            await viewModel.LoadChats(username);
             return viewModel;
         }
 
@@ -47,9 +47,9 @@ namespace Messanger.Client.ViewModel
         {
         }
 
-        private void LoadChats(string username)
+        private async Task LoadChats(string username)
         {
-            IEnumerable<MessageModel> tmp = _messageService.RecieveMessages();
+            IEnumerable<MessageModel> tmp = await _messageService.RecieveMessages();
             var chats = tmp.GroupBy(x =>
             {
                 if (x.ReceiverUsername == username)

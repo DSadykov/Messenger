@@ -1,6 +1,10 @@
+using Messenger.Server.Repository;
 using Messenger.Server.Services;
 
 using Microsoft.AspNetCore.OpenApi;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace Messenger.Server;
 public class Program
@@ -16,8 +20,12 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSignalR();
         builder.Services.AddControllers();
-        builder.Services.AddSingleton<ChatHub>();
+        var optionsBuilder = new DbContextOptionsBuilder<MessagesDbContext>();
+        optionsBuilder.UseInMemoryDatabase("Messages");
+        builder.Services.AddSingleton(new ChatHub(optionsBuilder.Options));
         builder.Services.AddSwaggerGen();
+        builder.Services.AddDbContext<MessagesDbContext>();
+        builder.Services.AddScoped<MessagesRepository>();
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
