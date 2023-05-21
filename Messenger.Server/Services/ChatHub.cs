@@ -1,14 +1,23 @@
 ﻿using System.Collections.Generic;
 
 using Messenger.Core.Models;
+using Messenger.Server.Repository;
 
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Messenger.Server.Services;
 
 public class ChatHub : Hub
 {
-    private Dictionary<string,string> _usernameToConnectionId= new Dictionary<string,string>();
+    public ChatHub(DbContextOptions<MessagesDbContext> dbContextOptions)
+    {
+        _dbContextOptions = dbContextOptions;
+    }
+    private Dictionary<string, string> _usernameToConnectionId = new();
+    private readonly DbContextOptions<MessagesDbContext> _dbContextOptions;
+
     public void AddUsername(string username, string chatId)
     {
         if (_usernameToConnectionId.ContainsKey(username))
@@ -24,7 +33,15 @@ public class ChatHub : Hub
     }
     public async Task SendMessage(string userName, MessageModel message)
     {
+        using var context = new MessagesDbContext(_dbContextOptions);
+        var messagesRepository = new MessagesRepository(context);
+        if (!_usernameToConnectionId.ContainsKey(userName))
+        {
+            await messagesRepository.AddMessage(message);
+            return;
+        }
         await Clients.Client(_usernameToConnectionId[userName]).SendAsync("SendMessage", message);
+        await messagesRepository.AddMessage(message);
     }
     public override Task OnDisconnectedAsync(Exception? exception)
     {

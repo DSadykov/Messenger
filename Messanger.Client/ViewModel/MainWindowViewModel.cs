@@ -18,6 +18,7 @@ using System.Windows.Threading;
 using System.ComponentModel;
 using Messanger.Client.VIew;
 using System.Data;
+using System.IO;
 
 namespace Messanger.Client.ViewModel
 {
@@ -32,14 +33,15 @@ namespace Messanger.Client.ViewModel
                 Username = username
             };
             await viewModel.BuildMessageServiceAsync(username);
-            viewModel.LoadChats(username);
+            await viewModel.LoadChats(username);
             return viewModel;
         }
 
         public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
         public async Task BuildMessageServiceAsync(string username)
         {
-            _messageService = new MessageService(username);
+            var url=File.ReadAllText("url.txt");
+            _messageService = new MessageService(username, url);
             await _messageService.BeginListeningAsync();
             _messageService.MessageRecieved += RecieveMessageAsync;
         }
@@ -47,9 +49,9 @@ namespace Messanger.Client.ViewModel
         {
         }
 
-        private void LoadChats(string username)
+        private async Task LoadChats(string username)
         {
-            IEnumerable<MessageModel> tmp = _messageService.RecieveMessages();
+            IEnumerable<MessageModel> tmp = await _messageService.RecieveMessages();
             var chats = tmp.GroupBy(x =>
             {
                 if (x.ReceiverUsername == username)

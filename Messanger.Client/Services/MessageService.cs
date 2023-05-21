@@ -24,10 +24,13 @@ namespace Messanger.Client.Services;
 public class MessageService
 {
     public HubConnection _hubConnection;
+    private readonly string _url;
+
     public string ConnectionId => _hubConnection.ConnectionId;
-    public MessageService(string username)
+    public MessageService(string username, string url)
     {
         Username = username;
+        _url = url;
     }
 
     public Action<MessageModel> MessageRecieved { get; set; }
@@ -36,9 +39,9 @@ public class MessageService
     internal async Task BeginListeningAsync()
     {
         _hubConnection = new HubConnectionBuilder()
-                        .WithUrl("https://localhost:7240/chatHub")
+                        .WithUrl($"{_url}/chatHub")
                         .Build();
-                
+
         _hubConnection.On("SendMessage", (MessageModel x) =>
         {
             MessageRecieved(x);
@@ -50,24 +53,41 @@ public class MessageService
     {
 
         using var client = new HttpClient();
-        var requestUriString = $"https://localhost:7240/api/Username/GetUsernames";
-        var response= await client.GetAsync(requestUriString);
+        var requestUriString = $"{_url}/api/Username/GetUsernames";
+        var response = await client.GetAsync(requestUriString);
         return JsonSerializer.Deserialize<IEnumerable<string>>(await response.Content.ReadAsStringAsync());
     }
 
     private async Task SendUsernameToHubAsync()
     {
         using var client = new HttpClient();
-        var requestUriString = $"https://localhost:7240/api/Username/AddUsername";
+        var requestUriString = $"{_url}/api/Username/AddUsername";
         await client.PostAsync(requestUriString, new StringContent(JsonSerializer.Serialize(new UsernameToConnectionId()
         {
-            ConnectionId=ConnectionId, Username=Username
+            ConnectionId = ConnectionId,
+            Username = Username
         }), Encoding.UTF8, "application/json"));
     }
 
-    internal IEnumerable<MessageModel> RecieveMessages()
+    internal async Task<IEnumerable<MessageModel>> RecieveMessages()
     {
-        return new List<MessageModel>();
+        using var client = new HttpClient();
+        var requestUriString = $"{_url}/api/Messages/GetMessages?username={Username}";
+        var response = await client.GetAsync(requestUriString);
+        var json = await response.Content.ReadAsStringAsync();
+        if (json is null)
+        {
+            return new List<MessageModel>();
+        }
+        var getMessagesResponse = JsonSerializer.Deserialize<GetMessagesResponse>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+        if (getMessagesResponse is null || getMessagesResponse.Messages is null)
+        {
+            return new List<MessageModel>();
+        }
+        return getMessagesResponse.Messages;
     }
 
     internal async Task SendMessage(MessageModel message)
