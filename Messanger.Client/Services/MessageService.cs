@@ -24,10 +24,13 @@ namespace Messanger.Client.Services;
 public class MessageService
 {
     public HubConnection _hubConnection;
+    private readonly string _url;
+
     public string ConnectionId => _hubConnection.ConnectionId;
-    public MessageService(string username)
+    public MessageService(string username, string url)
     {
         Username = username;
+        _url = url;
     }
 
     public Action<MessageModel> MessageRecieved { get; set; }
@@ -36,7 +39,7 @@ public class MessageService
     internal async Task BeginListeningAsync()
     {
         _hubConnection = new HubConnectionBuilder()
-                        .WithUrl("https://localhost:7240/chatHub")
+                        .WithUrl($"{_url}/chatHub")
                         .Build();
 
         _hubConnection.On("SendMessage", (MessageModel x) =>
@@ -50,7 +53,7 @@ public class MessageService
     {
 
         using var client = new HttpClient();
-        var requestUriString = $"https://localhost:7240/api/Username/GetUsernames";
+        var requestUriString = $"{_url}/api/Username/GetUsernames";
         var response = await client.GetAsync(requestUriString);
         return JsonSerializer.Deserialize<IEnumerable<string>>(await response.Content.ReadAsStringAsync());
     }
@@ -58,7 +61,7 @@ public class MessageService
     private async Task SendUsernameToHubAsync()
     {
         using var client = new HttpClient();
-        var requestUriString = $"https://localhost:7240/api/Username/AddUsername";
+        var requestUriString = $"{_url}/api/Username/AddUsername";
         await client.PostAsync(requestUriString, new StringContent(JsonSerializer.Serialize(new UsernameToConnectionId()
         {
             ConnectionId = ConnectionId,
@@ -69,7 +72,7 @@ public class MessageService
     internal async Task<IEnumerable<MessageModel>> RecieveMessages()
     {
         using var client = new HttpClient();
-        var requestUriString = $"https://localhost:7240/api/Messages/GetMessages?username={Username}";
+        var requestUriString = $"{_url}/api/Messages/GetMessages?username={Username}";
         var response = await client.GetAsync(requestUriString);
         var json = await response.Content.ReadAsStringAsync();
         if (json is null)

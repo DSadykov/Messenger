@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Messenger.Core\Messenger.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Url.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
