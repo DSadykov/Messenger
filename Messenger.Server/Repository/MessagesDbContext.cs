@@ -18,11 +18,16 @@ public class MessagesDbContext : DbContext
     }
 
     public DbSet<MessageModel> Messages { get; set; }
+    public DbSet<ImageModel> Images { get; set; }
     public async Task AddMessageAsync(MessageModel currencyRateDbModel)
     {
         await Messages.AddAsync(currencyRateDbModel);
         await SaveChangesAsync();
     }
 
-
+    internal async Task UploadImageAsync(ImageModel imageModel)
+    {
+        await Images.AddAsync(imageModel);
+        await SaveChangesAsync();
+    }
 }

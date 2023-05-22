@@ -20,4 +20,15 @@ public class MessagesController : ControllerBase
     {
         return new() { Messages = _messagesRepository.GetMessages(username) };
     }
+    [HttpPost("UploadImage")]
+    public async Task UploadImageAsync(ImageModel imageModel)
+    {
+        await _messagesRepository.UploadImageAsync(imageModel);
+    }
+    [HttpGet("GetImage")]
+    public ImageModel GetImage(Guid imageId)
+    {
+        ImageModel imageModel = _messagesRepository.GetImage(imageId);
+        return imageModel;
+    }
 }
