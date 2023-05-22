@@ -38,13 +38,14 @@
                 <Button Grid.Row="1" Content="Добавить чат" Command="{Binding AddNewChatCommand}"/>
             </Grid>
         </Border>
-        <Grid  Grid.Column="1" Visibility="{Binding ChatWindowVisibility, UpdateSourceTrigger=PropertyChanged}">
+        <Grid  Grid.Column="1" 
+            >
             <Grid.RowDefinitions>
                 <RowDefinition Height="6*" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="3*" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
             <Border BorderBrush="Black" Grid.ColumnSpan="2" BorderThickness="0.2" Margin="5" CornerRadius="10" HorizontalAlignment="Stretch">
@@ -60,10 +61,12 @@
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="1*" />
                                     <RowDefinition Height="1*" />
+                                    <RowDefinition Height="2*" />
                                 </Grid.RowDefinitions>
                                 <Border BorderBrush="Black" Background="{Binding Background}"  BorderThickness="0.2" Margin="5" CornerRadius="10">
                                     <StackPanel Background="Transparent">
                                         <TextBlock Text="{Binding Message.Message}" Margin="5" Background="Transparent" FontSize="15"/>
+                                        <Image Visibility="{Binding ImageVisibility}" Grid.Row="2" MaxHeight="200" MaxWidth="200" Source="{Binding Image}"/>
                                         <TextBlock Text="{Binding Message.DateSent}" Grid.Row="1" HorizontalAlignment="Right" Background="Transparent" Margin="5" FontSize="12"/>
                                     </StackPanel>
                                 </Border>
@@ -72,10 +75,25 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Border>
-            <Border Margin="5" Grid.Row="1" BorderBrush="Black" BorderThickness="0.2" CornerRadius="10">
-                <TextBox  Margin="5" TextAlignment="Center" Name="MessageBox" VerticalAlignment="Stretch" BorderThickness="0"/>
-            </Border>
-            <Button Grid.Column="1" Grid.Row="1" Margin="5" Content="Отправить" Command="{Binding SendMessage}" CommandParameter="{Binding ElementName=MessageBox}"/>
+            <Grid  Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <Border Margin="5" BorderBrush="Black" BorderThickness="0.2" HorizontalAlignment="Stretch" CornerRadius="10">
+                    <TextBox  Margin="5" TextAlignment="Center" Name="MessageBox" VerticalAlignment="Stretch" BorderThickness="0"/>
+                </Border>
+                <Image  Margin="5" Grid.Column="1" Visibility="{Binding AttachedImageVisibility}" Source="{Binding SelectedImage}"/>
+                <Button Grid.Column="1" VerticalAlignment="Top" HorizontalAlignment="Right" Content="X" BorderBrush="Transparent" Background="Transparent" Visibility="{Binding AttachedImageVisibility}" Command="{Binding RemoveSelectedImage}"/>
+            </Grid>
+            <Grid Grid.Column="1" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                </Grid.ColumnDefinitions>
+                <Button  Margin="5" Grid.Column="0" Content="Добавить&#x0a;картинку" Command="{Binding AddImageToMessage}"/>
+                <Button  Margin="5" Grid.Column="1" Content="Отправить" Command="{Binding SendMessage}" CommandParameter="{Binding ElementName=MessageBox}"/>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

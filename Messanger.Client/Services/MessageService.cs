@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Security.Policy;
 using System.Text;
 using System.Text.Json;
@@ -93,5 +94,21 @@ public class MessageService
     internal async Task SendMessage(MessageModel message)
     {
         await _hubConnection.InvokeAsync($"SendMessage", message.ReceiverUsername, message);
+    }
+
+    internal async Task SendMessage(MessageModel messageModel, ImageModel imageModel)
+    {
+        using var client = new HttpClient();
+        var requestUriString = $"{_url}/api/Messages/UploadImage";
+        var response = await client.PostAsJsonAsync(requestUriString, imageModel);
+        await SendMessage(messageModel);
+    }
+
+    internal async Task<ImageModel> RecieveImageAsync(Guid? imageId)
+    {
+        using var client = new HttpClient();
+        var requestUriString = $"{_url}/api/Messages/GetImage?imageId={imageId}";
+        var response = await client.GetAsync(requestUriString);
+        return await response.Content.ReadFromJsonAsync<ImageModel>();
     }
 }

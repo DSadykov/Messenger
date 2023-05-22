@@ -21,4 +21,13 @@ public class MessagesRepository
         await _messagesDbContext.AddMessageAsync(message);
     }
 
+    internal async Task UploadImageAsync(ImageModel imageModel)
+    {
+        await _messagesDbContext.UploadImageAsync(imageModel);
+    }
+
+    internal ImageModel GetImage(Guid imageId)
+    {
+        return _messagesDbContext.Images.FirstOrDefault(m => m.Id==imageId);
+    }
 }

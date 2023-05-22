@@ -14,7 +14,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
+            <RowDefinition Height="3*" />
         </Grid.RowDefinitions>
         <Label Content="Введите ваш никнейм" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
         <TextBox Text="{Binding Path=Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" TextAlignment="Center" FontSize="15" Grid.Row="1" Margin="60,0,60,0"  Height="40"/>
