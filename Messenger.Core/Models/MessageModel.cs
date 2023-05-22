@@ -12,5 +12,5 @@ public class MessageModel
     public string Username { get; set; }
     public string ReceiverUsername { get; set; }
     public DateTime DateSent { get; set; }
-
+    public Guid? ImageId { get; set; }
 }
