@@ -191,8 +191,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
         });
         (commandParameter as TextBox).Text = "";
         SelectedImage = null;
-        NotifyPropertyChanged(nameof(SelectedImage));
-        NotifyPropertyChanged(nameof(AttachedImageVisibility));
     }
 
     private RelayCommand _addNewChatCommand;
@@ -218,18 +216,26 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 
     private RelayCommand _removeSelectedImage;
-    public BitmapSource? SelectedImage { get; set; }
+    public BitmapSource? SelectedImage
+    {
+        get => _selectedImage; set
+        {
+            NotifyPropertyChanged(nameof(SelectedImage));
+            NotifyPropertyChanged(nameof(AttachedImageVisibility));
+            _selectedImage = value;
+        }
+    }
     public ICommand RemoveSelectedImage => _removeSelectedImage ??= new RelayCommand(PerformRemoveSelectedImage);
 
     private void PerformRemoveSelectedImage(object commandParameter)
     {
         SelectedImage = null;
         AttachedImageVisibility = Visibility.Collapsed;
-        NotifyPropertyChanged(nameof(AttachedImageVisibility));
-        NotifyPropertyChanged(nameof(SelectedImage));
     }
 
     private RelayCommand _addImageToMessage;
+    private BitmapSource? _selectedImage;
+
     public ICommand AddImageToMessage => _addImageToMessage ??= new RelayCommand(PerformAddImageToMessage);
 
     private void PerformAddImageToMessage(object commandParameter)
@@ -246,8 +252,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
         var imageBytes = File.ReadAllBytes(dialog.FileName);
         SelectedImage = _imageHelper.BinaryToBitmapSource(imageBytes);
         AttachedImageVisibility = Visibility.Visible;
-        NotifyPropertyChanged(nameof(AttachedImageVisibility));
-        NotifyPropertyChanged(nameof(SelectedImage));
     }
     public Visibility AttachedImageVisibility { get; set; } = Visibility.Collapsed;
 }
