@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Windows.Documents;
+﻿using System.Collections.ObjectModel;
 
 using Messanger.Client.ViewModel;
 
@@ -9,6 +6,6 @@ namespace Messanger.Client.Model;
 
 public class ChatModel
 {
-    public string ChatName { get; set; }
-    public ObservableCollection<MessageViewModel> Messages { get; set; }
+    public required string ChatName { get; set; }
+    public required ObservableCollection<MessageViewModel> Messages { get; set; }
 }
