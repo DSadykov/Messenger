@@ -17,16 +17,18 @@ public class MessageService
 {
     public HubConnection _hubConnection;
     private readonly string _url;
-
+    public Action<MessageModel> MessageRecieved { get; set; }
+    public string Username { get; }
     public string ConnectionId => _hubConnection.ConnectionId;
+
+
     public MessageService(string username, string url)
     {
         Username = username;
         _url = url;
     }
 
-    public Action<MessageModel> MessageRecieved { get; set; }
-    public string Username { get; }
+
 
     internal async Task BeginListeningAsync()
     {
@@ -41,6 +43,7 @@ public class MessageService
         await _hubConnection.StartAsync();
         await SendUsernameToHubAsync();
     }
+
     internal async Task<IEnumerable<string>> GetOnlineUsers()
     {
 
