@@ -23,6 +23,7 @@ using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 using System.Drawing;
 using Brushes = System.Windows.Media.Brushes;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Messanger.Client.ViewModel
 {
@@ -56,6 +57,11 @@ namespace Messanger.Client.ViewModel
         private async Task LoadChats(string username)
         {
             IEnumerable<MessageModel> tmp = await _messageService.RecieveMessages();
+            var images = new Dictionary<Guid, BitmapSource>();
+            foreach (var imageId in tmp.Where(x => x.ImageId is not null).Select(x=>(Guid)(x.ImageId)))
+            {
+                images[imageId] = BitmapToBitmapSource(new Bitmap(new MemoryStream(Convert.FromBase64String((await _messageService.RecieveImageAsync(imageId)).ImageBase64))));
+            }
             var chats = tmp.GroupBy(x =>
             {
                 if (x.ReceiverUsername == username)
@@ -71,6 +77,8 @@ namespace Messanger.Client.ViewModel
                     Message = y,
                     HorizontalAlignment = y.Username == username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
                     Background = y.Username == username ? Brushes.Green : Brushes.Yellow,
+                    Image= y.ImageId is not null ? images[(Guid)y.ImageId] : null,
+                    ImageVisibility = y.ImageId is null ? Visibility.Collapsed : Visibility.Visible,
                 }))
             });
             _dispatcher = Dispatcher.CurrentDispatcher;
