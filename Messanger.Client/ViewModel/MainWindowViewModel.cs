@@ -28,8 +28,54 @@ namespace Messanger.Client.ViewModel;
 public class MainWindowViewModel : INotifyPropertyChanged
 {
     public string Username { get; private set; }
+    public ObservableCollection<ChatModel> ChatsList { get; set; }
+    public event PropertyChangedEventHandler PropertyChanged;
+
     private Dispatcher _dispatcher;
     private readonly ImageHelper _imageHelper = new();
+    private MessageService _messageService;
+    private ChatModel _selectedChat;
+    private BitmapSource? _selectedImage;
+
+
+    public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
+    public Visibility AttachedImageVisibility { get; set; } = Visibility.Collapsed;
+
+
+    public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
+    public ICommand AddNewChatCommand => _addNewChatCommand ??= new RelayCommand(AddNewChat);
+    public ICommand RemoveSelectedImage => _removeSelectedImage ??= new RelayCommand(PerformRemoveSelectedImage);
+    public ICommand AddImageToMessage => _addImageToMessage ??= new RelayCommand(PerformAddImageToMessage);
+
+
+    private ICommand _sendMessage;
+    private ICommand _addNewChatCommand;
+    private ICommand _removeSelectedImage;
+    private ICommand _addImageToMessage;
+
+
+    public BitmapSource? SelectedImage
+    {
+        get => _selectedImage; set
+        {
+            NotifyPropertyChanged(nameof(SelectedImage));
+            NotifyPropertyChanged(nameof(AttachedImageVisibility));
+            _selectedImage = value;
+        }
+    }
+    public ChatModel SelectedChat
+    {
+        get => _selectedChat;
+        set
+        {
+            _selectedChat = value;
+
+            NotifyPropertyChanged(nameof(SelectedChat));
+            NotifyPropertyChanged(nameof(ChatWindowVisibility));
+        }
+    }
+
+
     public static async Task<MainWindowViewModel> BuildViewModelAsync(string username)
     {
         MainWindowViewModel viewModel = new()
@@ -41,16 +87,12 @@ public class MainWindowViewModel : INotifyPropertyChanged
         return viewModel;
     }
 
-    public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
     public async Task BuildMessageServiceAsync(string username)
     {
         var url = File.ReadAllText("url.txt");
         _messageService = new MessageService(username, url);
         await _messageService.BeginListeningAsync();
         _messageService.MessageRecieved += RecieveMessageAsync;
-    }
-    public MainWindowViewModel()
-    {
     }
 
     private async Task LoadChats(string username)
@@ -85,32 +127,10 @@ public class MainWindowViewModel : INotifyPropertyChanged
     }
 
 
-
-    public ObservableCollection<ChatModel> ChatsList { get; set; }
-    public ChatModel SelectedChat
-    {
-        get => _selectedChat;
-        set
-        {
-            _selectedChat = value;
-
-            NotifyPropertyChanged(nameof(SelectedChat));
-            NotifyPropertyChanged(nameof(ChatWindowVisibility));
-        }
-    }
-
-    private RelayCommand _sendMessage;
-    private MessageService _messageService;
-    private ChatModel _selectedChat;
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
     protected void NotifyPropertyChanged(string info)
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(info));
     }
-
-    public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
 
     private async void RecieveMessageAsync(MessageModel message)
     {
@@ -193,9 +213,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
         SelectedImage = null;
     }
 
-    private RelayCommand _addNewChatCommand;
-    public ICommand AddNewChatCommand => _addNewChatCommand ??= new RelayCommand(AddNewChat);
-
     private async void AddNewChat(object commandParameter)
     {
         IEnumerable<string> onlineUsers = (await _messageService.GetOnlineUsers()).Except(new List<string>() { Username });
@@ -215,28 +232,12 @@ public class MainWindowViewModel : INotifyPropertyChanged
         }));
     }
 
-    private RelayCommand _removeSelectedImage;
-    public BitmapSource? SelectedImage
-    {
-        get => _selectedImage; set
-        {
-            NotifyPropertyChanged(nameof(SelectedImage));
-            NotifyPropertyChanged(nameof(AttachedImageVisibility));
-            _selectedImage = value;
-        }
-    }
-    public ICommand RemoveSelectedImage => _removeSelectedImage ??= new RelayCommand(PerformRemoveSelectedImage);
-
     private void PerformRemoveSelectedImage(object commandParameter)
     {
         SelectedImage = null;
         AttachedImageVisibility = Visibility.Collapsed;
     }
 
-    private RelayCommand _addImageToMessage;
-    private BitmapSource? _selectedImage;
-
-    public ICommand AddImageToMessage => _addImageToMessage ??= new RelayCommand(PerformAddImageToMessage);
 
     private void PerformAddImageToMessage(object commandParameter)
     {
@@ -253,5 +254,4 @@ public class MainWindowViewModel : INotifyPropertyChanged
         SelectedImage = _imageHelper.BinaryToBitmapSource(imageBytes);
         AttachedImageVisibility = Visibility.Visible;
     }
-    public Visibility AttachedImageVisibility { get; set; } = Visibility.Collapsed;
 }
