@@ -24,6 +24,7 @@ using Microsoft.Win32;
 using System.Drawing;
 using Brushes = System.Windows.Media.Brushes;
 using static System.Net.Mime.MediaTypeNames;
+using Messanger.Client.Helpers;
 
 namespace Messanger.Client.ViewModel
 {
@@ -31,6 +32,7 @@ namespace Messanger.Client.ViewModel
     {
         public string Username { get; private set; }
         private Dispatcher _dispatcher;
+        private ImageHelper _imageHelper = new();
         public static async Task<MainWindowViewModel> BuildViewModelAsync(string username)
         {
             var viewModel = new MainWindowViewModel
@@ -58,9 +60,9 @@ namespace Messanger.Client.ViewModel
         {
             IEnumerable<MessageModel> tmp = await _messageService.RecieveMessages();
             var images = new Dictionary<Guid, BitmapSource>();
-            foreach (var imageId in tmp.Where(x => x.ImageId is not null).Select(x=>(Guid)(x.ImageId)))
+            foreach (var imageId in tmp.Where(x => x.ImageId is not null).Select(x => (Guid)(x.ImageId)))
             {
-                images[imageId] = BitmapToBitmapSource(new Bitmap(new MemoryStream(Convert.FromBase64String((await _messageService.RecieveImageAsync(imageId)).ImageBase64))));
+                images[imageId] = _imageHelper.Base64StringToBitmapSource((await _messageService.RecieveImageAsync(imageId)).ImageBase64);
             }
             var chats = tmp.GroupBy(x =>
             {
@@ -77,7 +79,7 @@ namespace Messanger.Client.ViewModel
                     Message = y,
                     HorizontalAlignment = y.Username == username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
                     Background = y.Username == username ? Brushes.Green : Brushes.Yellow,
-                    Image= y.ImageId is not null ? images[(Guid)y.ImageId] : null,
+                    Image = y.ImageId is not null ? images[(Guid)y.ImageId] : null,
                     ImageVisibility = y.ImageId is null ? Visibility.Collapsed : Visibility.Visible,
                 }))
             });
@@ -136,7 +138,7 @@ namespace Messanger.Client.ViewModel
                                 HorizontalAlignment = message.Username == Username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
                                 Background = message.Username == Username ? Brushes.Green : Brushes.Yellow,
                                 ImageVisibility=image is null?Visibility.Collapsed : Visibility.Visible,
-                                Image=image is null?null:BitmapToBitmapSource(new Bitmap(new MemoryStream(Convert.FromBase64String(image.ImageBase64))))
+                                Image=image is null?null:_imageHelper.Base64StringToBitmapSource(image.ImageBase64)
                             }
                         }
                     });
@@ -151,7 +153,7 @@ namespace Messanger.Client.ViewModel
                     HorizontalAlignment = message.Username == Username ? HorizontalAlignment.Left : HorizontalAlignment.Right,
                     Background = message.Username == Username ? Brushes.Green : Brushes.Yellow,
                     ImageVisibility = image is null ? Visibility.Collapsed : Visibility.Visible,
-                    Image = image is null ? null : BitmapToBitmapSource(new Bitmap(new MemoryStream(Convert.FromBase64String(image.ImageBase64))))
+                    Image = image is null ? null : _imageHelper.Base64StringToBitmapSource(image.ImageBase64)
                 });
             }));
         }
@@ -174,7 +176,7 @@ namespace Messanger.Client.ViewModel
             ImageModel imageModel = null;
             if (SelectedImage is not null)
             {
-                imageModel = new() { ImageBase64 = Convert.ToBase64String( BitmapSourceToByteArray(SelectedImage)), Id = Guid.NewGuid(), MessageId = messageModel.Id };
+                imageModel = new() { ImageBase64 = _imageHelper.BitmapSourceToBase64String(SelectedImage), Id = Guid.NewGuid(), MessageId = messageModel.Id };
                 messageModel.ImageId = imageModel.Id;
                 await _messageService.SendMessage(messageModel, imageModel);
             }
@@ -245,42 +247,11 @@ namespace Messanger.Client.ViewModel
                 return;
             }
             var imageBytes = File.ReadAllBytes(dialog.FileName);
-            SelectedImage = BitmapToBitmapSource(new Bitmap(new MemoryStream(imageBytes)));
+            SelectedImage = _imageHelper.BinaryToBitmapSource(imageBytes);
             AttachedImageVisibility = Visibility.Visible;
             NotifyPropertyChanged(nameof(AttachedImageVisibility));
             NotifyPropertyChanged(nameof(SelectedImage));
         }
         public Visibility AttachedImageVisibility { get; set; } = Visibility.Collapsed;
-        public static BitmapSource BitmapToBitmapSource(Bitmap bitmap)
-        {
-            var bitmapData = bitmap.LockBits(
-                new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height),
-                System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
-
-            var bitmapSource = BitmapSource.Create(
-                bitmapData.Width, bitmapData.Height,
-                bitmap.HorizontalResolution, bitmap.VerticalResolution,
-                PixelFormats.Bgr24, null,
-                bitmapData.Scan0, bitmapData.Stride * bitmapData.Height, bitmapData.Stride);
-
-            bitmap.UnlockBits(bitmapData);
-
-            return bitmapSource;
-        }
-        public static byte[] BitmapSourceToByteArray(BitmapSource bitmap)
-        {
-            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-            //encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
-            encoder.QualityLevel = 100;
-            // byte[] bit = new byte[0];
-            using (MemoryStream stream = new())
-            {
-                encoder.Frames.Add(BitmapFrame.Create(bitmap));
-                encoder.Save(stream);
-                byte[] bit = stream.ToArray();
-                stream.Close();
-                return bit;
-            }
-        }
     }
 }
