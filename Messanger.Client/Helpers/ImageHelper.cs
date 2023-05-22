@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -13,26 +9,26 @@ internal class ImageHelper
 {
     public byte[] BitmapSourceToByteArray(BitmapSource bitmap)
     {
-        JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-        //encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
-        encoder.QualityLevel = 100;
-        // byte[] bit = new byte[0];
-        using (MemoryStream stream = new())
+        JpegBitmapEncoder encoder = new()
         {
-            encoder.Frames.Add(BitmapFrame.Create(bitmap));
-            encoder.Save(stream);
-            byte[] bit = stream.ToArray();
-            stream.Close();
-            return bit;
-        }
+            //encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+            QualityLevel = 100
+        };
+        // byte[] bit = new byte[0];
+        using MemoryStream stream = new();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        encoder.Save(stream);
+        var bit = stream.ToArray();
+        stream.Close();
+        return bit;
     }
     public BitmapSource BitmapToBitmapSource(Bitmap bitmap)
     {
-        var bitmapData = bitmap.LockBits(
+        System.Drawing.Imaging.BitmapData bitmapData = bitmap.LockBits(
             new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height),
             System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
 
-        var bitmapSource = BitmapSource.Create(
+        BitmapSource bitmapSource = BitmapSource.Create(
             bitmapData.Width, bitmapData.Height,
             bitmap.HorizontalResolution, bitmap.VerticalResolution,
             PixelFormats.Bgr24, null,
