@@ -185,6 +185,7 @@ namespace Messanger.Client.ViewModel
             (commandParameter as TextBox).Text = "";
             SelectedImage = null;
             NotifyPropertyChanged(nameof(SelectedImage));
+            NotifyPropertyChanged(nameof(AttachedImageVisibility));
         }
 
         private RelayCommand _addNewChatCommand;
