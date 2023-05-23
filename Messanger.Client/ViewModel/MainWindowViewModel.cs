@@ -39,7 +39,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
 
     public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
-    public Visibility AttachedImageVisibility { get; set; } = Visibility.Collapsed;
+    public Visibility AttachedImageVisibility => SelectedImage is null ? Visibility.Collapsed : Visibility.Visible;
 
 
     public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
@@ -58,9 +58,9 @@ public class MainWindowViewModel : INotifyPropertyChanged
     {
         get => _selectedImage; set
         {
+            _selectedImage = value;
             NotifyPropertyChanged(nameof(SelectedImage));
             NotifyPropertyChanged(nameof(AttachedImageVisibility));
-            _selectedImage = value;
         }
     }
     public ChatModel SelectedChat
@@ -178,7 +178,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
     private async void PerformSendMessage(object commandParameter)
     {
         var message = (commandParameter as TextBox)?.Text;
-        if (string.IsNullOrEmpty(message))
+        if (string.IsNullOrEmpty(message) && SelectedImage is null)
         {
             return;
         }
@@ -235,7 +235,6 @@ public class MainWindowViewModel : INotifyPropertyChanged
     private void PerformRemoveSelectedImage(object commandParameter)
     {
         SelectedImage = null;
-        AttachedImageVisibility = Visibility.Collapsed;
     }
 
 
@@ -252,6 +251,5 @@ public class MainWindowViewModel : INotifyPropertyChanged
         }
         var imageBytes = File.ReadAllBytes(dialog.FileName);
         SelectedImage = _imageHelper.BinaryToBitmapSource(imageBytes);
-        AttachedImageVisibility = Visibility.Visible;
     }
 }
