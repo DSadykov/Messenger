@@ -39,7 +39,9 @@ public class MainWindowViewModel : INotifyPropertyChanged
 
 
     public Visibility ChatWindowVisibility => SelectedChat is null ? Visibility.Collapsed : Visibility.Visible;
+
     public Visibility AttachedImageVisibility => SelectedImage is null ? Visibility.Collapsed : Visibility.Visible;
+
 
 
     public ICommand SendMessage => _sendMessage ??= new RelayCommand(PerformSendMessage);
@@ -61,6 +63,7 @@ public class MainWindowViewModel : INotifyPropertyChanged
             _selectedImage = value;
             NotifyPropertyChanged(nameof(SelectedImage));
             NotifyPropertyChanged(nameof(AttachedImageVisibility));
+
         }
     }
     public ChatModel SelectedChat
